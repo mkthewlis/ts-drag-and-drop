@@ -1,12 +1,18 @@
-// Project State Management class
+// Project Type class
+enum ProjectStatus { Active, Finished }
+class Project {
+    constructor(public id: string, public title: string, public description: string, public people: number, public status: ProjectStatus) {}
+}
+
+// Project State Management
+type Listener = (items: Project[]) => void;
 
 class ProjectState {
-    private listeners: any[] = [];
-    private projects: any[] = [];
+    private listeners: Listener[] = [];
+    private projects: Project[] = [];
     private static instance: ProjectState;
 
-    private constructor() {
-    }
+    private constructor() {}
     
     // ensures there's only one instance of the project's current state
     static getInstance() {
@@ -18,19 +24,14 @@ class ProjectState {
     }
 
     // event listener method to check whenever state changes
-    addListener(listenerFn: Function) {
+    addListener(listenerFn: Listener) {
         // this pushes all event listeners into array to loop through them on execcution
         this.listeners.push(listenerFn);
     }
 
     // pushes new project to project state array above
     addProject(title: string, description: string, numOfPeople: number){
-        const newProject = {
-            id: Math.random().toString(), // generates random  id
-            title: title,
-            description: description,
-            people: numOfPeople
-        };
+        const newProject = new Project(Math.random().toString(), title, description, numOfPeople, ProjectStatus.Active)
         this.projects.push(newProject);
         for (const listenerFn of this.listeners) {
             listenerFn(this.projects.slice());
@@ -94,7 +95,7 @@ class ProjectList {
     hostElement: HTMLDivElement;
     // element in this case is the <section> in the index.html file
     element: HTMLElement;
-    assignedProjects: any[];
+    assignedProjects: Project[];
 
     constructor(private type: "active" | "finished") {
         // access html elements in index.html file to initialise it
@@ -109,9 +110,16 @@ class ProjectList {
         this.element.id = `${this.type}-projects`;
 
         // registers the listener function when list is created
-        projectState.addListener((projects: any[]) => {
+        projectState.addListener((projects: Project[]) => {
+            const relevantProjects = projects.filter((prj) => {
+                if (this.type === "active") {
+                    return prj.status === ProjectStatus.Active;
+                } else {
+                    return prj.status === ProjectStatus.Finished;
+                }
+            });
             // adds projects to state projects and then renders it
-            this.assignedProjects = projects;
+            this.assignedProjects = relevantProjects;
             this.renderProjects();
         });
 
@@ -122,6 +130,8 @@ class ProjectList {
     // method to render projects in the DOM
     private renderProjects() {
         const listElement = document.getElementById(`${this.type}-projects-list`)! as HTMLUListElement;
+        // clears list each time state changes to fix duplicate items
+        listElement.innerHTML = "";
         for (const prjItem of this.assignedProjects) {
             const listItem = document.createElement("li");
             listItem.textContent = prjItem.title;
