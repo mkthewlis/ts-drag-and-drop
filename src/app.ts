@@ -1,3 +1,46 @@
+// Project State Management class
+
+class ProjectState {
+    private listeners: any[] = [];
+    private projects: any[] = [];
+    private static instance: ProjectState;
+
+    private constructor() {
+    }
+    
+    // ensures there's only one instance of the project's current state
+    static getInstance() {
+        if (this.instance) {
+            return this.instance;
+        }
+        this.instance = new ProjectState();
+        return this.instance;
+    }
+
+    // event listener method to check whenever state changes
+    addListener(listenerFn: Function) {
+        // this pushes all event listeners into array to loop through them on execcution
+        this.listeners.push(listenerFn);
+    }
+
+    // pushes new project to project state array above
+    addProject(title: string, description: string, numOfPeople: number){
+        const newProject = {
+            id: Math.random().toString(), // generates random  id
+            title: title,
+            description: description,
+            people: numOfPeople
+        };
+        this.projects.push(newProject);
+        for (const listenerFn of this.listeners) {
+            listenerFn(this.projects.slice());
+        }
+    }
+}
+
+// global instance of ProjectState, now saved as a const
+const projectState = ProjectState.getInstance();
+
 // Form validation logic
 interface Validatable {
     value: string | number;
@@ -51,11 +94,13 @@ class ProjectList {
     hostElement: HTMLDivElement;
     // element in this case is the <section> in the index.html file
     element: HTMLElement;
+    assignedProjects: any[];
 
     constructor(private type: "active" | "finished") {
-        // access html elements in index.html file
+        // access html elements in index.html file to initialise it
         this.templateElement = document.getElementById("project-list")! as HTMLTemplateElement;
         this.hostElement = document.getElementById("app")! as HTMLDivElement;
+        this.assignedProjects = [];
 
         // form element to be rendered to the application
         const importedNode = document.importNode(this.templateElement.content, true);
@@ -63,17 +108,34 @@ class ProjectList {
         // creates dynamic ids
         this.element.id = `${this.type}-projects`;
 
+        // registers the listener function when list is created
+        projectState.addListener((projects: any[]) => {
+            // adds projects to state projects and then renders it
+            this.assignedProjects = projects;
+            this.renderProjects();
+        });
+
         this.attach();
         this.renderContent();
     }
 
-    // method to fill blank spaces in index html file
+    // method to render projects in the DOM
+    private renderProjects() {
+        const listElement = document.getElementById(`${this.type}-projects-list`)! as HTMLUListElement;
+        for (const prjItem of this.assignedProjects) {
+            const listItem = document.createElement("li");
+            listItem.textContent = prjItem.title;
+            listElement.appendChild(listItem);
+        }
+    }
+
+    // method to fill blank spaces in index.html file
     private renderContent() {
         // creates a dynamic id for each list item
         const listId = `${this.type}-projects-list`;
         this.element.querySelector("ul")!.id = listId;
         // finds the h2 tag to add content to it
-        this.element.querySelector("h2")!.textContent = this.type.toUpperCase() + "PROJECTS";
+        this.element.querySelector("h2")!.textContent = this.type.toUpperCase() + " PROJECTS";
     }
 
     // method to attach the list element into DOM
@@ -158,7 +220,8 @@ class ProjectInput {
         // checks if userInput is an array (as TS tuples - defined in the gatherUserInput method - are)
         if (Array.isArray(userInput)){
             const [title, desc, people] = userInput;
-            console.log(title, desc, people);
+            // uses global state saved as a const above
+            projectState.addProject(title, desc, people);
             this.clearInputs();
         }
     }
