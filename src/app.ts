@@ -1,3 +1,34 @@
+// Form validation logic
+interface Validatable {
+    value: string | number;
+    required?: boolean;
+    minLength?: number;
+    maxLength?: number;
+    min?: number;
+    max?: number;
+}
+
+function validate(validatableInput: Validatable){
+    let isValid = true;
+    if (validatableInput.required) {
+        isValid = isValid && validatableInput.value.toString().trim().length !== 0;
+    }
+    if (validatableInput.minLength != null && typeof validatableInput.value === "string") {
+        isValid = isValid && validatableInput.value.length >= validatableInput.minLength;
+    }
+    if (validatableInput.maxLength != null && typeof validatableInput.value === "string") {
+        isValid = isValid && validatableInput.value.length <= validatableInput.maxLength;
+    }
+    if (validatableInput.min != null && typeof validatableInput.value === "number") {
+        isValid = isValid && validatableInput.value >= validatableInput.min;
+    }
+    if (validatableInput.max != null && typeof validatableInput.value === "number") {
+        isValid = isValid && validatableInput.value <= validatableInput.max;
+    }
+    return isValid;
+}
+
+
 // Autobind TS decorator
 function autobind(_: any, _2: string, descriptor: PropertyDescriptor){
     // Stores the method we originally defined
@@ -11,6 +42,44 @@ function autobind(_: any, _2: string, descriptor: PropertyDescriptor){
         }
     };
     return adjDescriptor;
+}
+
+// ProjectList Class
+
+class ProjectList {
+    templateElement: HTMLTemplateElement;
+    hostElement: HTMLDivElement;
+    // element in this case is the <section> in the index.html file
+    element: HTMLElement;
+
+    constructor(private type: "active" | "finished") {
+        // access html elements in index.html file
+        this.templateElement = document.getElementById("project-list")! as HTMLTemplateElement;
+        this.hostElement = document.getElementById("app")! as HTMLDivElement;
+
+        // form element to be rendered to the application
+        const importedNode = document.importNode(this.templateElement.content, true);
+        this.element = importedNode.firstElementChild as HTMLElement;
+        // creates dynamic ids
+        this.element.id = `${this.type}-projects`;
+
+        this.attach();
+        this.renderContent();
+    }
+
+    // method to fill blank spaces in index html file
+    private renderContent() {
+        // creates a dynamic id for each list item
+        const listId = `${this.type}-projects-list`;
+        this.element.querySelector("ul")!.id = listId;
+        // finds the h2 tag to add content to it
+        this.element.querySelector("h2")!.textContent = this.type.toUpperCase() + "PROJECTS";
+    }
+
+    // method to attach the list element into DOM
+    private attach() {
+        this.hostElement.insertAdjacentElement("beforeend", this.element);
+    }
 }
 
 // ProjectInput Class
@@ -47,7 +116,25 @@ class ProjectInput {
         const enteredDescription = this.descriptionInputElement.value;
         const enteredPeople = this.peopleInputElement.value;
 
-        if (enteredTitle.trim().length === 0 || enteredDescription.trim().length === 0 || enteredPeople.trim().length === 0) {
+        // creates objects needed for validation process
+        const titleValidatable: Validatable = {
+            value: enteredTitle,
+            required: true,
+        }
+        const descriptionValidatable: Validatable = {
+            value: enteredDescription,
+            required: true,
+            minLength: 5,
+        }
+        const peopleValidatable: Validatable = {
+            value: +enteredPeople, // people converted to number here with the + sign!
+            required: true,
+            min: 1,
+            max: 5,
+        }
+
+        // runs the validation
+        if (!validate(titleValidatable) || !validate(descriptionValidatable) || !validate(peopleValidatable)) {
             alert("Invalid input, please try again!");
             return;
         } else {
@@ -88,5 +175,7 @@ class ProjectInput {
     }
 }
 
-// Instance of ProjectInput class
+// instantiate application classes
 const prjInput = new ProjectInput();
+const activePrj = new ProjectList("active");
+const finishedPrj = new ProjectList("finished");
