@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "lite-server"
+    "start": "lite-server",
+    "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write"
   },
   "keywords": [
     "typescript",
@@ -14,6 +15,7 @@
   "author": "Maximilian Schwarzmüller",
   "license": "ISC",
   "devDependencies": {
-    "lite-server": "^2.5.4"
+    "lite-server": "^2.5.4",
+    "prettier": "^2.3.1"
   }
 }

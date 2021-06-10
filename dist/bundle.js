@@ -19,7 +19,7 @@ var App;
             this.attach(insertAtStart);
         }
         attach(insertAtBeginning) {
-            this.hostElement.insertAdjacentElement(insertAtBeginning ? "afterbegin" : "beforeend", this.element);
+            this.hostElement.insertAdjacentElement(insertAtBeginning ? 'afterbegin' : 'beforeend', this.element);
         }
     }
     App.Component = Component;
@@ -67,7 +67,7 @@ var App;
             this.updateListeners();
         }
         moveProject(projectId, newStatus) {
-            const project = this.projects.find(prj => prj.id === projectId);
+            const project = this.projects.find((prj) => prj.id === projectId);
             if (project && project.status !== newStatus) {
                 project.status = newStatus;
                 this.updateListeners();
@@ -104,34 +104,34 @@ var App;
 (function (App) {
     class ProjectList extends App.Component {
         constructor(type) {
-            super("project-list", "app", false, `${type}-projects`);
+            super('project-list', 'app', false, `${type}-projects`);
             this.type = type;
             this.assignedProjects = [];
             this.configure();
             this.renderContent();
         }
         dragOverHandler(event) {
-            if (event.dataTransfer && event.dataTransfer.types[0] === "text/plain") {
+            if (event.dataTransfer && event.dataTransfer.types[0] === 'text/plain') {
                 event.preventDefault();
-                const listElement = this.element.querySelector("ul");
-                listElement.classList.add("droppable");
+                const listElement = this.element.querySelector('ul');
+                listElement.classList.add('droppable');
             }
         }
         dropHandler(event) {
-            const prjId = event.dataTransfer.getData("text/plain");
-            App.projectState.moveProject(prjId, this.type === "active" ? App.ProjectStatus.Active : App.ProjectStatus.Finished);
+            const prjId = event.dataTransfer.getData('text/plain');
+            App.projectState.moveProject(prjId, this.type === 'active' ? App.ProjectStatus.Active : App.ProjectStatus.Finished);
         }
         dragLeaveHandler(_) {
-            const listElement = this.element.querySelector("ul");
-            listElement.classList.remove("droppable");
+            const listElement = this.element.querySelector('ul');
+            listElement.classList.remove('droppable');
         }
         configure() {
-            this.element.addEventListener("dragover", this.dragOverHandler);
-            this.element.addEventListener("dragleave", this.dragLeaveHandler);
-            this.element.addEventListener("drop", this.dropHandler);
+            this.element.addEventListener('dragover', this.dragOverHandler);
+            this.element.addEventListener('dragleave', this.dragLeaveHandler);
+            this.element.addEventListener('drop', this.dropHandler);
             App.projectState.addListener((projects) => {
                 const relevantProjects = projects.filter((prj) => {
-                    if (this.type === "active") {
+                    if (this.type === 'active') {
                         return prj.status === App.ProjectStatus.Active;
                     }
                     else {
@@ -144,14 +144,15 @@ var App;
         }
         renderContent() {
             const listId = `${this.type}-projects-list`;
-            this.element.querySelector("ul").id = listId;
-            this.element.querySelector("h2").textContent = this.type.toUpperCase() + " PROJECTS";
+            this.element.querySelector('ul').id = listId;
+            this.element.querySelector('h2').textContent =
+                this.type.toUpperCase() + ' PROJECTS';
         }
         renderProjects() {
             const listElement = document.getElementById(`${this.type}-projects-list`);
-            listElement.innerHTML = "";
+            listElement.innerHTML = '';
             for (const prjItem of this.assignedProjects) {
-                new App.ProjectItem(this.element.querySelector("ul").id, prjItem);
+                new App.ProjectItem(this.element.querySelector('ul').id, prjItem);
             }
         }
     }
@@ -171,18 +172,25 @@ var App;
     function validate(validatableInput) {
         let isValid = true;
         if (validatableInput.required) {
-            isValid = isValid && validatableInput.value.toString().trim().length !== 0;
+            isValid =
+                isValid && validatableInput.value.toString().trim().length !== 0;
         }
-        if (validatableInput.minLength != null && typeof validatableInput.value === "string") {
-            isValid = isValid && validatableInput.value.length >= validatableInput.minLength;
+        if (validatableInput.minLength != null &&
+            typeof validatableInput.value === 'string') {
+            isValid =
+                isValid && validatableInput.value.length >= validatableInput.minLength;
         }
-        if (validatableInput.maxLength != null && typeof validatableInput.value === "string") {
-            isValid = isValid && validatableInput.value.length <= validatableInput.maxLength;
+        if (validatableInput.maxLength != null &&
+            typeof validatableInput.value === 'string') {
+            isValid =
+                isValid && validatableInput.value.length <= validatableInput.maxLength;
         }
-        if (validatableInput.min != null && typeof validatableInput.value === "number") {
+        if (validatableInput.min != null &&
+            typeof validatableInput.value === 'number') {
             isValid = isValid && validatableInput.value >= validatableInput.min;
         }
-        if (validatableInput.max != null && typeof validatableInput.value === "number") {
+        if (validatableInput.max != null &&
+            typeof validatableInput.value === 'number') {
             isValid = isValid && validatableInput.value <= validatableInput.max;
         }
         return isValid;
@@ -193,15 +201,15 @@ var App;
 (function (App) {
     class ProjectInput extends App.Component {
         constructor() {
-            super("project-input", "app", true, "user-input");
-            this.titleInputElement = this.element.querySelector("#title");
-            this.descriptionInputElement = this.element.querySelector("#description");
-            this.peopleInputElement = this.element.querySelector("#people");
+            super('project-input', 'app', true, 'user-input');
+            this.titleInputElement = this.element.querySelector('#title');
+            this.descriptionInputElement = this.element.querySelector('#description');
+            this.peopleInputElement = this.element.querySelector('#people');
             this.configure();
             this.renderContent();
         }
         configure() {
-            this.element.addEventListener("submit", this.submitHandler.bind(this));
+            this.element.addEventListener('submit', this.submitHandler.bind(this));
         }
         renderContent() { }
         gatherUserInput() {
@@ -210,21 +218,23 @@ var App;
             const enteredPeople = this.peopleInputElement.value;
             const titleValidatable = {
                 value: enteredTitle,
-                required: true,
+                required: true
             };
             const descriptionValidatable = {
                 value: enteredDescription,
                 required: true,
-                minLength: 5,
+                minLength: 5
             };
             const peopleValidatable = {
                 value: +enteredPeople,
                 required: true,
                 min: 1,
-                max: 5,
+                max: 5
             };
-            if (!App.validate(titleValidatable) || !App.validate(descriptionValidatable) || !App.validate(peopleValidatable)) {
-                alert("Invalid input, please try again!");
+            if (!App.validate(titleValidatable) ||
+                !App.validate(descriptionValidatable) ||
+                !App.validate(peopleValidatable)) {
+                alert('Invalid input, please try again!');
                 return;
             }
             else {
@@ -232,9 +242,9 @@ var App;
             }
         }
         clearInputs() {
-            this.titleInputElement.value = "";
-            this.descriptionInputElement.value = "";
-            this.peopleInputElement.value = "";
+            this.titleInputElement.value = '';
+            this.descriptionInputElement.value = '';
+            this.peopleInputElement.value = '';
         }
         submitHandler(event) {
             event.preventDefault();
@@ -254,41 +264,42 @@ var App;
 var App;
 (function (App) {
     new App.ProjectInput();
-    new App.ProjectList("active");
-    new App.ProjectList("finished");
+    new App.ProjectList('active');
+    new App.ProjectList('finished');
 })(App || (App = {}));
 var App;
 (function (App) {
     class ProjectItem extends App.Component {
         constructor(hostId, project) {
-            super("single-project", hostId, false, project.id);
+            super('single-project', hostId, false, project.id);
             this.project = project;
             this.configure();
             this.renderContent();
         }
         get peopleQuantity() {
             if (this.project.people === 1) {
-                return "1 person";
+                return '1 person';
             }
             else {
                 return `${this.project.people} people`;
             }
         }
         dragStartHandler(event) {
-            event.dataTransfer.setData("text/plain", this.project.id);
-            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData('text/plain', this.project.id);
+            event.dataTransfer.effectAllowed = 'move';
         }
         dragEndHandler(_) {
-            console.log("DragEnd");
+            console.log('DragEnd');
         }
         configure() {
-            this.element.addEventListener("dragstart", this.dragStartHandler);
-            this.element.addEventListener("dragend", this.dragEndHandler);
+            this.element.addEventListener('dragstart', this.dragStartHandler);
+            this.element.addEventListener('dragend', this.dragEndHandler);
         }
         renderContent() {
-            this.element.querySelector("h2").textContent = this.project.title;
-            this.element.querySelector("h3").textContent = this.peopleQuantity + " assigned";
-            this.element.querySelector("p").textContent = this.project.description;
+            this.element.querySelector('h2').textContent = this.project.title;
+            this.element.querySelector('h3').textContent =
+                this.peopleQuantity + ' assigned';
+            this.element.querySelector('p').textContent = this.project.description;
         }
     }
     __decorate([
